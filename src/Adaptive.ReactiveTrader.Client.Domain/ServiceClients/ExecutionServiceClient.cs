@@ -1,27 +1,24 @@
-﻿using System;
-using System.Reactive.Linq;
-using Adaptive.ReactiveTrader.Client.Domain.Transport;
-using Adaptive.ReactiveTrader.Shared;
+﻿using Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp;
 using Adaptive.ReactiveTrader.Shared.DTO.Execution;
-using Microsoft.AspNet.SignalR.Client;
+using System;
+using System.Reactive.Linq;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
 {
-    internal class ExecutionServiceClient : ServiceClientBase, IExecutionServiceClient
+    internal class ExecutionServiceClient : IExecutionServiceClient
     {
-        public ExecutionServiceClient(IConnectionProvider connectionProvider) : base(connectionProvider)
+        private readonly IWampConnection _connection;
+
+        public ExecutionServiceClient(IWampConnection connection)
         {
+            _connection = connection;
         }
 
-        public IObservable<TradeDto> ExecuteRequest(TradeRequestDto tradeRequest)
+        public IObservable<TradeDto> ExecuteRequest(ExecuteTradeRequestDto executeTradeRequest)
         {
-            return RequestUponConnection(connection => ExecuteForConnection(connection.ExecutionHubProxy, tradeRequest), TimeSpan.FromMilliseconds(500));
+            return _connection.RequestResponse<ExecuteTradeResponseDto>("execution", "executeTrade", executeTradeRequest)
+                              .Select(x => x.Trade)
+                              .Where(x => x.Status != TradeStatusDto.Pending);
         }
-
-        private static IObservable<TradeDto> ExecuteForConnection(IHubProxy executionHubProxy, TradeRequestDto tradeRequestDto)
-        {
-            return Observable.FromAsync(
-                () => executionHubProxy.Invoke<TradeDto>(ServiceConstants.Server.Execute, tradeRequestDto));
-        } 
     }
 }

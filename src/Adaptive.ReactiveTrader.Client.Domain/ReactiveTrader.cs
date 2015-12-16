@@ -9,13 +9,15 @@ using Adaptive.ReactiveTrader.Client.Domain.Models.ReferenceData;
 using Adaptive.ReactiveTrader.Client.Domain.Repositories;
 using Adaptive.ReactiveTrader.Client.Domain.ServiceClients;
 using Adaptive.ReactiveTrader.Client.Domain.Transport;
+using Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp;
 using Adaptive.ReactiveTrader.Shared.Logging;
+using WampClient;
 
 namespace Adaptive.ReactiveTrader.Client.Domain
 {
     public class ReactiveTrader : IReactiveTrader, IDisposable
     {
-        private ConnectionProvider _connectionProvider;
+        //private ConnectionProvider _connectionProvider;
         private ILoggerFactory _loggerFactory;
         private ILog _log;
         private IControlRepository _controlRepository;
@@ -24,17 +26,18 @@ namespace Adaptive.ReactiveTrader.Client.Domain
         {
             _loggerFactory = loggerFactory ?? new DebugLoggerFactory();
             _log = _loggerFactory.Create(typeof(ReactiveTrader));
-            _connectionProvider = new ConnectionProvider(username, servers, _loggerFactory);
+            //_connectionProvider = new ConnectionProvider(username, servers, _loggerFactory);
+            var wampConnection = new WampConnection(servers[0], username);
 
-            var referenceDataServiceClient = new ReferenceDataServiceClient(_connectionProvider, _loggerFactory);
-            var executionServiceClient = new ExecutionServiceClient(_connectionProvider);
-            var blotterServiceClient = new BlotterServiceClient(_connectionProvider, _loggerFactory);
-            var pricingServiceClient = new PricingServiceClient(_connectionProvider, _loggerFactory);
+            var referenceDataServiceClient = new ReferenceDataServiceClient(wampConnection, _loggerFactory);
+            var executionServiceClient = new ExecutionServiceClient(wampConnection);
+            var blotterServiceClient = new BlotterServiceClient(wampConnection, _loggerFactory);
+            var pricingServiceClient = new PricingServiceClient(wampConnection, _loggerFactory);
 
             if (authToken != null)
             {
-                var controlServiceClient = new ControlServiceClient(new AuthTokenProvider(authToken), _connectionProvider, _loggerFactory);
-                _controlRepository = new ControlRepository(controlServiceClient);
+                //var controlServiceClient = new ControlServiceClient(new AuthTokenProvider(authToken), _connectionProvider, _loggerFactory);
+                //_controlRepository = new ControlRepository(controlServiceClient);
             }
 
             PriceLatencyRecorder = new PriceLatencyRecorder();
@@ -67,18 +70,19 @@ namespace Adaptive.ReactiveTrader.Client.Domain
         {
             get
             {
-                return _connectionProvider.GetActiveConnection()
-                    .Do(_ => _log.Info("New connection created by connection provider"))
-                    .Select(c => c.StatusStream)
-                    .Switch()
-                    .Publish()
-                    .RefCount();
+                return Observable.Empty<ConnectionInfo>();
+                //return _connectionProvider.GetActiveConnection()
+                //    .Do(_ => _log.Info("New connection created by connection provider"))
+                //    .Select(c => c.StatusStream)
+                //    .Switch()
+                //    .Publish()
+                //    .RefCount();
             }
         }
 
         public void Dispose()
         {
-            _connectionProvider.Dispose();
+            //_connectionProvider.Dispose();
         }
     }
 }

@@ -11,13 +11,14 @@ namespace Adaptive.ReactiveTrader.Shared.DTO.Execution
          public string DealtCurrency { get; set; }
          public DirectionDto Direction { get; set; }
          public decimal SpotRate { get; set; }
-         public DateTime TradeDate { get; set; }
-         public DateTime ValueDate { get; set; }
+         public string TradeDate { get; set; }
+         public string ValueDate { get; set; }
          public TradeStatusDto Status { get; set; }
 
         public override string ToString()
         {
-            return string.Format("TradeId: {0}, TraderName: {1}, CurrencyPair: {2}, Notional: {3}, Direction: {4}, SpotRate: {5}, TradeDate: {6}, ValueDate: {7}, Status: {8}, DealtCurrency: {9}", TradeId, TraderName, CurrencyPair, Notional, Direction, SpotRate, TradeDate, ValueDate, Status, DealtCurrency);
+            return
+                $"TradeId: {TradeId}, TraderName: {TraderName}, CurrencyPair: {CurrencyPair}, Notional: {Notional}, Direction: {Direction}, SpotRate: {SpotRate}, TradeDate: {TradeDate}, ValueDate: {ValueDate}, Status: {Status}, DealtCurrency: {DealtCurrency}";
         }
     }
 }

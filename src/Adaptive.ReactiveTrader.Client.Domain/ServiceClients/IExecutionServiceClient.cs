@@ -5,6 +5,6 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
 {
     internal interface IExecutionServiceClient
     {
-        IObservable<TradeDto> ExecuteRequest(TradeRequestDto tradeRequest);
+        IObservable<TradeDto> ExecuteRequest(ExecuteTradeRequestDto executeTradeRequest);
     }
 }

@@ -1,4 +1,6 @@
-﻿using Adaptive.ReactiveTrader.Shared.DTO.Execution;
+﻿using System;
+using System.Globalization;
+using Adaptive.ReactiveTrader.Shared.DTO.Execution;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.Models.Execution
 {
@@ -6,6 +8,13 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Models.Execution
     {
         public ITrade Create(TradeDto trade)
         {
+            var dateParseFormats = new[]
+            {
+                "dd/MM/yyyy",
+                "MM/dd/yyyy",
+                "u"
+            };
+
             return new Trade(
                 trade.CurrencyPair,
                 trade.Direction == DirectionDto.Buy ? Direction.BUY : Direction.SELL,
@@ -13,10 +22,10 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Models.Execution
                 trade.DealtCurrency,
                 trade.SpotRate,
                 trade.Status == TradeStatusDto.Done ? TradeStatus.Done : TradeStatus.Rejected,
-                trade.TradeDate,
+                DateTime.ParseExact(trade.TradeDate, dateParseFormats, CultureInfo.CurrentCulture, DateTimeStyles.AssumeUniversal),
                 trade.TradeId,
                 trade.TraderName,
-                trade.ValueDate);
+                DateTime.Today); // The new server gives value date out in format SP. 16 Dec so just default to today trade.ValueDate);
         }
     }
 }

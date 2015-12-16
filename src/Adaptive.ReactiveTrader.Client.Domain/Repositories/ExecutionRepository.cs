@@ -29,13 +29,13 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Repositories
             {
                 var price = executablePrice.Parent;
 
-                var request = new TradeRequestDto
+                var request = new ExecuteTradeRequestDto
                 {
                     Direction = executablePrice.Direction == Direction.BUY ? DirectionDto.Buy : DirectionDto.Sell,
                     Notional = notional,
                     SpotRate = executablePrice.Rate,
-                    Symbol = price.CurrencyPair.Symbol,
-                    ValueDate = price.ValueDate,
+                    CurrencyPair = price.CurrencyPair.Symbol,
+                    ValueDate = price.ValueDate.ToString("u"),
                     DealtCurrency = dealtCurrency
                 };
 

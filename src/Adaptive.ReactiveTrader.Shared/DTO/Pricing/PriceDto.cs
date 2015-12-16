@@ -5,19 +5,19 @@ namespace Adaptive.ReactiveTrader.Shared.DTO.Pricing
 {
     public class PriceDto
     {
-        [JsonProperty(PropertyName = "s")]
+        //[JsonProperty(PropertyName = "s")]
         public string Symbol { get; set; }
 
-        [JsonProperty(PropertyName = "b")]
+        //[JsonProperty(PropertyName = "b")]
         public decimal Bid { get; set; }
 
-        [JsonProperty(PropertyName = "a")]
+        //[JsonProperty(PropertyName = "a")]
         public decimal Ask { get; set; }
 
-        [JsonProperty(PropertyName = "d")]
-        public long ValueDate { get; set; }
+        //[JsonProperty(PropertyName = "d")]
+        public DateTime ValueDate { get; set; }
         
-        [JsonProperty(PropertyName = "t")]
+        //[JsonProperty(PropertyName = "t")]
         public long CreationTimestamp { get; set; }
 
         /// <summary>
@@ -31,8 +31,10 @@ namespace Adaptive.ReactiveTrader.Shared.DTO.Pricing
         [JsonIgnore]
         public DateTime SpotDate
         {
-            get { return EpochDate.AddMilliseconds(ValueDate); }
-            set { ValueDate = (long)(value - EpochDate).TotalMilliseconds; }
+            //get { return EpochDate.AddMilliseconds(ValueDate); }
+            //set { ValueDate = (long)(value - EpochDate).TotalMilliseconds; }
+            get {  return ValueDate;}
+            set { ValueDate = value; }
         }
     }
 }

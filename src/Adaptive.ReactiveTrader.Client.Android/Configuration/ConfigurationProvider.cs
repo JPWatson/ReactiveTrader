@@ -7,7 +7,7 @@ namespace Adaptive.ReactiveTrader.Client.Android.Configuration
         public string[] Servers
         {
             //get { return new[] { "http://localhost:8080" }; }
-            get { return new[] { "https://reactivetrader.azurewebsites.net/signalr" }; }
+            get { return new[] { "ws://130.211.60.124:8080/ws" }; }
         }
     }
 }
