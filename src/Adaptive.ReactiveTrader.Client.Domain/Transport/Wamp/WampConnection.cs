@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Adaptive.ReactiveTrader.Shared.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,13 +26,17 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
     {
         private const string WampRealm = "com.weareadaptive.reactivetrader";
         private readonly string _userName;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IWampChannel _channel;
         private readonly Random _random = new Random();
         private readonly ReplaySubject<IDictionary<string, List<string>>> _currentServices = new ReplaySubject<IDictionary<string, List<string>>>(1);
+        private readonly ILog _log;
 
-        public WampConnection(string serverUri, string userName)
+        public WampConnection(string serverUri, string userName, ILoggerFactory loggerFactory)
         {
+            _log = loggerFactory.Create(typeof(WampConnection));
             _userName = userName;
+            _loggerFactory = loggerFactory;
             _channel = new WampChannelFactory().ConnectToRealm(WampRealm)
                                                .WebSocketTransport(serverUri)
                                                .JsonSerialization()
@@ -99,16 +104,19 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         private IObservable<T> GetInnerRequestStream<T>(string procedure, object payload)
         {
             var queueName = GetPrivateQueueName();
+
+            _log.Info($"Subscribing to private queue {queueName} for procedure call {procedure}");
             var topicObservable = GetTopic<T>(queueName);
 
-            _channel.RealmProxy.RpcCatalog.Invoke(new NoOpCallback(), new CallOptions(), procedure, new object[] {WrapMessage(payload, queueName)});
+            _log.Info($"Invoking RPC call for procedure call {procedure}");
+            _channel.RealmProxy.RpcCatalog.Invoke(new LoggingCallback<T>(procedure, _loggerFactory), new CallOptions(), procedure, new object[] {WrapMessage(payload, queueName)});
 
             return topicObservable;
         }
 
         private IObservable<T> DoRequestResponseCall<T>(string procedure, object payload)
         {
-            var callBack = new ObservableCallback<T>();
+            var callBack = new ObservableCallback<T>(procedure, _loggerFactory);
             _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), procedure, new object[] { WrapMessage(payload, string.Empty) });
 
             return callBack.ResponseObservable;

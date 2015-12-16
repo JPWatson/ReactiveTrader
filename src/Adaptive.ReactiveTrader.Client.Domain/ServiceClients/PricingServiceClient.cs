@@ -23,8 +23,9 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
 
             var request = new GetSpotStreamRequestDto {symbol = currencyPair};
 
-            return _connection.GetRequestStream<PriceDto>("pricing", "getPriceUpdates", request)
-                  .Do(x => _log.Info($"Subscribed to prices for ccy pair {currencyPair}"));
+            _log.Info($"Subscribing to prices for ccy pair {currencyPair}");
+
+            return _connection.GetRequestStream<PriceDto>("pricing", "getPriceUpdates", request);
         }
     }
 }

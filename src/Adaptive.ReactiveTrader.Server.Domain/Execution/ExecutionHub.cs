@@ -19,7 +19,7 @@ namespace Adaptive.ReactiveTrader.Server.Execution
         }
 
         [HubMethodName(ServiceConstants.Server.Execute)]
-        public Task<TradeDto> Execute(TradeRequestDto tradeRequest)
+        public Task<TradeDto> Execute(ExecuteTradeRequestDto tradeRequest)
         {
             var user = ContextUtil.GetUserName(Context);
             Log.InfoFormat("Received trade request {0} from user {1}", tradeRequest, user);

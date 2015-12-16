@@ -22,11 +22,11 @@ namespace Adaptive.ReactiveTrader.Server.Execution
             _tradeId = 0;
         }
 
-        public async Task<TradeDto> Execute(TradeRequestDto tradeRequest, string user)
+        public async Task<TradeDto> Execute(ExecuteTradeRequestDto tradeRequest, string user)
         {
             var status = TradeStatusDto.Done;
 
-            switch (tradeRequest.Symbol)
+            switch (tradeRequest.CurrencyPair)
             {
                 case "EURJPY":
                     await Task.Delay(TimeSpan.FromSeconds(5));
@@ -39,19 +39,19 @@ namespace Adaptive.ReactiveTrader.Server.Execution
                     break;
             }
            
-            if (tradeRequest.Symbol == "GBPJPY")
+            if (tradeRequest.CurrencyPair == "GBPJPY")
             {
                 status = TradeStatusDto.Rejected;
             }
 
             var trade =  new TradeDto
             {
-                CurrencyPair = tradeRequest.Symbol,
+                CurrencyPair = tradeRequest.CurrencyPair,
                 Direction = tradeRequest.Direction,
                 Notional = tradeRequest.Notional,
                 SpotRate = tradeRequest.SpotRate,
                 Status = status,
-                TradeDate = DateTime.UtcNow,
+                TradeDate = DateTime.UtcNow.ToString("u"),
                 ValueDate = tradeRequest.ValueDate,
                 TradeId = Interlocked.Increment(ref _tradeId),
                 TraderName = user,

@@ -68,14 +68,14 @@ namespace Adaptive.ReactiveTrader.Server
                 {
                     var price = _priceLastValueCache.GetLastValue(ccyPair);
 
-                    var trade = new TradeRequestDto()
+                    var trade = new ExecuteTradeRequestDto()
                     {
                         DealtCurrency = "EUR",
                         Direction = DirectionDto.Buy,
                         Notional = 500000,
                         SpotRate = price.Bid,
-                        Symbol = ccyPair,
-                        ValueDate = DateTime.Now.ToNextWeekday(2)
+                        CurrencyPair = ccyPair,
+                        ValueDate = DateTime.Now.ToNextWeekday(2).ToString("u")
                     };
 
                     _executionService.Execute(trade, "CPU-007").Wait(TimeSpan.FromSeconds(10));

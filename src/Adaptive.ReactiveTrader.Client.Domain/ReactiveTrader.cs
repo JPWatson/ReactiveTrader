@@ -1,17 +1,14 @@
-﻿using System;
-using System.Reactive.Linq;
-using Adaptive.ReactiveTrader.Client.Domain.Authorization;
-using Adaptive.ReactiveTrader.Client.Domain.Concurrency;
+﻿using Adaptive.ReactiveTrader.Client.Domain.Concurrency;
 using Adaptive.ReactiveTrader.Client.Domain.Instrumentation;
 using Adaptive.ReactiveTrader.Client.Domain.Models.Execution;
 using Adaptive.ReactiveTrader.Client.Domain.Models.Pricing;
 using Adaptive.ReactiveTrader.Client.Domain.Models.ReferenceData;
 using Adaptive.ReactiveTrader.Client.Domain.Repositories;
 using Adaptive.ReactiveTrader.Client.Domain.ServiceClients;
-using Adaptive.ReactiveTrader.Client.Domain.Transport;
 using Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp;
 using Adaptive.ReactiveTrader.Shared.Logging;
-using WampClient;
+using System;
+using System.Reactive.Linq;
 
 namespace Adaptive.ReactiveTrader.Client.Domain
 {
@@ -27,7 +24,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain
             _loggerFactory = loggerFactory ?? new DebugLoggerFactory();
             _log = _loggerFactory.Create(typeof(ReactiveTrader));
             //_connectionProvider = new ConnectionProvider(username, servers, _loggerFactory);
-            var wampConnection = new WampConnection(servers[0], username);
+            var wampConnection = new WampConnection(servers[0], username, _loggerFactory);
 
             var referenceDataServiceClient = new ReferenceDataServiceClient(wampConnection, _loggerFactory);
             var executionServiceClient = new ExecutionServiceClient(wampConnection);

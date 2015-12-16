@@ -105,7 +105,7 @@
     <Compile Include="Transport\ConnectionStatus.cs" />
     <Compile Include="Transport\IConnection.cs" />
     <Compile Include="Transport\IConnectionProvider.cs" />
-    <Compile Include="Transport\Wamp\NoOpCallback.cs" />
+    <Compile Include="Transport\Wamp\LoggingCallback.cs" />
     <Compile Include="Transport\Wamp\ObservableCallback.cs" />
     <Compile Include="Transport\Wamp\WampConnection.cs" />
   </ItemGroup>
