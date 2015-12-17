@@ -60,19 +60,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             return recentHeartbeats.GroupBy(x => x.Type, x => x.Instance)
                                    .ToDictionary(x => x.Key, x => x.Distinct().ToList());
         }
-
-        public async Task Connect()
-        {
-            try
-            {
-                await _channel.Open();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-        }
-
+        
         public IObservable<T> GetTopic<T>(string topic)
         {
             return _channel.RealmProxy.Services.GetSubject<T>(topic);
