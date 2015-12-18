@@ -18,6 +18,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         protected override void OnResult(T result)
         {
             _responseSubject.OnNext(result);
+            _responseSubject.OnCompleted();
         }
     }
 }

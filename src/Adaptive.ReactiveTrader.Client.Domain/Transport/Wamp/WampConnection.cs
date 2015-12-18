@@ -46,8 +46,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             // Just window the heartbeats every couple of seconds and see what is active at the time, then use those instances
             _channel.Open()
                     .ToObservable()
-                    .Select(_ => GetTopic<HeartbeatDto>("status"))
-                    .Merge()
+                    .SelectMany(_ => GetTopic<HeartbeatDto>("status"))
                     .Window(TimeSpan.FromSeconds(2))
                     .Select(window => window.ToList())
                     .Concat()
