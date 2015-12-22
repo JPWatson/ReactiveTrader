@@ -7,16 +7,16 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
 {
     internal class ExecutionServiceClient : IExecutionServiceClient
     {
-        private readonly IWampConnection _connection;
+        private readonly WampServiceClient _serviceClient;
 
-        public ExecutionServiceClient(IWampConnection connection)
+        public ExecutionServiceClient(WampServiceClient serviceClient)
         {
-            _connection = connection;
+            _serviceClient = serviceClient;
         }
 
         public IObservable<TradeDto> ExecuteRequest(ExecuteTradeRequestDto executeTradeRequest)
         {
-            return _connection.RequestResponse<ExecuteTradeResponseDto>("execution", "executeTrade", executeTradeRequest)
+            return _serviceClient.CreateRequestResponseOperation<ExecuteTradeRequestDto, ExecuteTradeResponseDto>("executeTrade", executeTradeRequest)
                               .Select(x => x.Trade)
                               .Where(x => x.Status != TradeStatusDto.Pending);
         }

@@ -4,9 +4,9 @@ namespace Adaptive.ReactiveTrader.Client.Domain
 {
     public class ConnectionInfo
     {
-        public ConnectionStatus ConnectionStatus { get; private set; }
-        public string Server { get; private set; }
-        public string TransportName { get; private set; }
+        public ConnectionStatus ConnectionStatus { get; }
+        public string Server { get; }
+        public string TransportName { get; }
 
         public ConnectionInfo(ConnectionStatus connectionStatus, string server, string transportName)
         {
@@ -17,7 +17,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain
 
         public override string ToString()
         {
-            return string.Format("ConnectionStatus: {0}, Server: {1}, TransportName:{2}", ConnectionStatus, Server, TransportName);
+            return $"ConnectionStatus: {ConnectionStatus}, Server: {Server}, TransportName:{TransportName}";
         }
     }
 }

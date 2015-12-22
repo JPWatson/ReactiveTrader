@@ -2,12 +2,10 @@
 {
     public enum ConnectionStatus
     {
+        Uninitialized,
         Connecting,
         Connected,
-        ConnectionSlow,
-        Reconnecting,
-        Reconnected,
-        Closed,
-        Uninitialized
+        PartiallyConnected,
+        Closed
     }
 }

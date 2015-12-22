@@ -1,25 +1,26 @@
-﻿using Adaptive.ReactiveTrader.Shared.Logging;
+﻿using Adaptive.ReactiveTrader.Shared.DTO;
+using Adaptive.ReactiveTrader.Shared.Logging;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using WampClient;
+using WampSharp.Core.Listener;
 using WampSharp.V2;
 using WampSharp.V2.Client;
 using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Fluent;
+using WampSharp.V2.Realm;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 {
-    internal interface IWampConnection
+    public interface IWampConnection
     {
-        IObservable<T> GetTopic<T>(string topic);
-        IObservable<T> GetRequestStream<T>(string serviceType, string procedure, object payload = null);
-        IObservable<T> RequestResponse<T>(string serviceType, string procedure, object payload = null);
+        IObservable<T> SubscribeToTopic<T>(string topic);
+        IObservable<TResponse> RequestResponse<TRequest, TResponse>(string operationName, TRequest request, string responseTopic = null);
+        IObservable<bool> ConnectionStatus { get; }
+        Task ConnectAsync();
     }
 
     internal class WampConnection : IWampConnection
@@ -28,9 +29,10 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         private readonly string _userName;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IWampChannel _channel;
-        private readonly Random _random = new Random();
-        private readonly ReplaySubject<IDictionary<string, List<string>>> _currentServices = new ReplaySubject<IDictionary<string, List<string>>>(1);
         private readonly ILog _log;
+        private readonly BehaviorSubject<bool> _connectionStatusSubject = new BehaviorSubject<bool>(false);
+        private bool _openCalled;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public WampConnection(string serverUri, string userName, ILoggerFactory loggerFactory)
         {
@@ -41,72 +43,71 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                                                .WebSocketTransport(serverUri)
                                                .JsonSerialization()
                                                .Build();
-
-            // Hacky way of getting the current set of services until Keith's proper solution can be implemented here.
-            // Just window the heartbeats every couple of seconds and see what is active at the time, then use those instances
-            _channel.Open()
-                    .ToObservable()
-                    .SelectMany(_ => GetTopic<HeartbeatDto>("status"))
-                    .Window(TimeSpan.FromSeconds(2))
-                    .Select(window => window.ToList())
-                    .Concat()
-                    .Select(GetServiceSummary)
-                    .Subscribe(_currentServices);
         }
 
-        private IDictionary<string, List<string>> GetServiceSummary(IList<HeartbeatDto> recentHeartbeats)
-        {
-            return recentHeartbeats.GroupBy(x => x.Type, x => x.Instance)
-                                   .ToDictionary(x => x.Key, x => x.Distinct().ToList());
-        }
-        
-        public IObservable<T> GetTopic<T>(string topic)
-        {
-            return _channel.RealmProxy.Services.GetSubject<T>(topic);
-        }
+        public IObservable<bool> ConnectionStatus => _connectionStatusSubject.AsObservable();
 
-        public IObservable<T> GetRequestStream<T>(string serviceType, string procedure, object payload = null)
-        {
-            return CallServiceInstance(serviceType, procedure, call => GetInnerRequestStream<T>(call, payload));
-        }
+        public bool IsConnected => _connectionStatusSubject.Value;
 
-        public IObservable<T> RequestResponse<T>(string serviceType, string procedure, object payload = null)
+        public async Task ConnectAsync()
         {
-            return CallServiceInstance(serviceType, procedure, call => DoRequestResponseCall<T>(call, payload));
+            if (!_openCalled)
+            {
+                _openCalled = true;
+                _log.Info("Opening Connection");
+
+                _disposables.Add(SubscribeToConnectionStatus());
+
+                await _channel.Open().ConfigureAwait(false);
+            }
         }
 
-        private IObservable<T> CallServiceInstance<T>(string serviceType, string procedure, Func<string, IObservable<T>> serviceCall)
+        private IDisposable SubscribeToConnectionStatus()
         {
-            return _currentServices.Where(x => x != null && x.ContainsKey(serviceType))
-                                   .Take(1)
-                                   .Select(x =>
-                                   {
-                                       var instances = x[serviceType];
-                                       return $"{instances[0]}.{procedure}";
-                                   })
-                                   .Select(serviceCall)
-                                   .Merge();
+            var connectionMonitor = _channel.RealmProxy.Monitor;
+            var connectionEstablished = Observable.FromEventPattern<WampSessionCreatedEventArgs>(h => connectionMonitor.ConnectionEstablished += h,
+                                                                                                 h => connectionMonitor.ConnectionEstablished -= h);
+
+            var connectionBroken = Observable.FromEventPattern<WampSessionCloseEventArgs>(h => connectionMonitor.ConnectionBroken += h,
+                                                                                          h => connectionMonitor.ConnectionBroken -= h);
+
+            var connectionError = Observable.FromEventPattern<WampConnectionErrorEventArgs>(h => connectionMonitor.ConnectionError += h,
+                                                                                            h => connectionMonitor.ConnectionError -= h);
+
+            return Observable.Merge(connectionEstablished.Select(_ => true),
+                                    connectionBroken.Select(_ => false),
+                                    connectionError.Select(_ => false))
+                             .StartWith(false)
+                             .DistinctUntilChanged()
+                             .Subscribe(_connectionStatusSubject);
         }
 
-        private IObservable<T> GetInnerRequestStream<T>(string procedure, object payload)
+        public IObservable<T> SubscribeToTopic<T>(string topic)
         {
-            var queueName = GetPrivateQueueName();
+            return Observable.Create<T>(obs =>
+            {
+                if (IsConnected)
+                {
+                    return _channel.RealmProxy.Services
+                                   .GetSubject<T>(topic)
+                                   .Subscribe(obs);
+                }
 
-            _log.Info($"Subscribing to private queue {queueName} for procedure call {procedure}");
-            var topicObservable = GetTopic<T>(queueName);
+                obs.OnError(new InvalidOperationException($"Session not connected, cannot subscribe to topic {topic}"));
 
-            _log.Info($"Invoking RPC call for procedure call {procedure}");
-            _channel.RealmProxy.RpcCatalog.Invoke(new LoggingCallback<T>(procedure, _loggerFactory), new CallOptions(), procedure, new object[] {WrapMessage(payload, queueName)});
-
-            return topicObservable;
+                return Disposable.Empty;
+            });
         }
 
-        private IObservable<T> DoRequestResponseCall<T>(string procedure, object payload)
+        public IObservable<TResponse> RequestResponse<TRequest, TResponse>(string operationName, TRequest request, string responseTopic = null)
         {
-            var callBack = new ObservableCallback<T>(procedure, _loggerFactory);
-            _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), procedure, new object[] { WrapMessage(payload, string.Empty) });
+            return Observable.Create<TResponse>(obs =>
+            {
+                var callBack = new ObservableCallback<TResponse>(operationName, obs, _loggerFactory);
+                _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), operationName, new object[] { WrapMessage(request, responseTopic) });
 
-            return callBack.ResponseObservable;
+                return callBack;
+            });
         }
 
         private MessageDto WrapMessage(object payload, string queueName)
@@ -117,11 +118,6 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                 ReplyTo = queueName,
                 Username = _userName
             };
-        }
-
-        private string GetPrivateQueueName()
-        {
-            return $"queue{_random.Next().ToString("x8")}";
         }
     }
 }

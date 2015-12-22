@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Adaptive.ReactiveTrader.Client.Concurrency;
@@ -57,8 +58,7 @@ namespace Adaptive.ReactiveTrader.ControlClient.GUI
         {
             ServerStatus = "Connecting...";
 
-            _reactiveTrader.Initialize(_userProvider.Username, _configurationProvider.Servers, null, ConfigurationManager.AppSettings[AuthTokenProvider.AuthTokenKey]);
-
+            Task.Run(() => _reactiveTrader.Initialize(_userProvider.Username, _configurationProvider.Servers, null, ConfigurationManager.AppSettings[AuthTokenProvider.AuthTokenKey])).Wait();
 
             _reactiveTrader.ConnectionStatusStream
                 .SubscribeOn(_concurrencyService.TaskPool)

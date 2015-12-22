@@ -1,24 +1,41 @@
 using Adaptive.ReactiveTrader.Shared.Logging;
 using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 {
-    internal class ObservableCallback<T> : LoggingCallback<T>
+    internal class ObservableCallback<T> : WampCallback<T>, IDisposable
     {
-        private readonly ReplaySubject<T> _responseSubject = new ReplaySubject<T>(1);
+        private readonly IObserver<T> _observer;
+        private bool _isDisposed;
 
-        public ObservableCallback(string procedureName, ILoggerFactory loggerFactory) : base(procedureName, loggerFactory)
+        public ObservableCallback(string procedureName, IObserver<T> observer, ILoggerFactory loggerFactory) : base(procedureName, loggerFactory)
         {
+            _observer = observer;
         }
-
-        public IObservable<T> ResponseObservable => _responseSubject.AsObservable();
 
         protected override void OnResult(T result)
         {
-            _responseSubject.OnNext(result);
-            _responseSubject.OnCompleted();
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _observer.OnNext(result);
+        }
+
+        protected override void OnError(Exception ex)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _observer.OnError(ex);
+        }
+
+        public void Dispose()
+        {
+            _isDisposed = true;
         }
     }
 }

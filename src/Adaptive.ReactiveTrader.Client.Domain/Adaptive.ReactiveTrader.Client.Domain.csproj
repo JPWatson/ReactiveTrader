@@ -105,9 +105,18 @@
     <Compile Include="Transport\ConnectionStatus.cs" />
     <Compile Include="Transport\IConnection.cs" />
     <Compile Include="Transport\IConnectionProvider.cs" />
-    <Compile Include="Transport\Wamp\LoggingCallback.cs" />
+    <Compile Include="Transport\Wamp\LastValueObservable.cs" />
+    <Compile Include="Transport\Wamp\WampCallback.cs" />
     <Compile Include="Transport\Wamp\ObservableCallback.cs" />
+    <Compile Include="Transport\Wamp\RetryPolicy.cs" />
+    <Compile Include="Transport\Wamp\WampServiceClient.cs" />
+    <Compile Include="Transport\Wamp\ServiceException.cs" />
+    <Compile Include="Transport\Wamp\ServiceObservableExtensions.cs" />
+    <Compile Include="Transport\Wamp\ServiceInstanceStatus.cs" />
+    <Compile Include="Transport\Wamp\ServiceStatusDto.cs" />
+    <Compile Include="Transport\Wamp\ServiceStatusSummary.cs" />
     <Compile Include="Transport\Wamp\WampConnection.cs" />
+    <Compile Include="Transport\Wamp\WampServiceClientContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNet.SignalR.Client">

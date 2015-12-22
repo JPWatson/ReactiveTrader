@@ -40,7 +40,7 @@ namespace Adaptive.ReactiveTrader.Client
             var reactiveTraderApi = container.Resolve<IReactiveTrader>();
 
             var username = container.Resolve<IUserProvider>().Username;
-            reactiveTraderApi.Initialize(username, container.Resolve<IConfigurationProvider>().Servers, container.Resolve<ILoggerFactory>());
+            await Task.Run(() => reactiveTraderApi.Initialize(username, container.Resolve<IConfigurationProvider>().Servers, container.Resolve<ILoggerFactory>()));
             Log.InfoFormat("Reactive trader API initialized in {0}ms", sw.ElapsedMilliseconds);
 
             MainWindow = new MainWindow();

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace WampClient
+namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 {
-    public class HeartbeatDto
+    public class ServiceStatusDto
     {
         public string Type { get; set; }
         public string Instance { get; set; }

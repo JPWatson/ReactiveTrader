@@ -47,7 +47,6 @@
     <Compile Include="DTO\Execution\ExecuteTradeRequestDto.cs" />
     <Compile Include="DTO\Execution\TradesDto.cs" />
     <Compile Include="DTO\Execution\TradeStatusDto.cs" />
-    <Compile Include="DTO\HeartbeatDto.cs" />
     <Compile Include="DTO\MessageDto.cs" />
     <Compile Include="DTO\NothingDto.cs" />
     <Compile Include="DTO\Pricing\GetSpotStreamRequestDto.cs" />

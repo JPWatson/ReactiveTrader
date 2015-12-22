@@ -19,7 +19,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
         {
             var activeConnections = (from connection in _connectionProvider.GetActiveConnection()
                                      from status in connection.StatusStream
-                                     where status.ConnectionStatus == ConnectionStatus.Connected || status.ConnectionStatus == ConnectionStatus.Reconnected
+                                     where status.ConnectionStatus == ConnectionStatus.Connected
                                      select connection)
                 .Publish()
                 .RefCount();
@@ -30,7 +30,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
             // 1 - notifies when the first connection gets disconnected
             var firstDisconnection = from connection in firstConnection
                                      from status in connection.StatusStream
-                                     where status.ConnectionStatus == ConnectionStatus.Reconnecting || status.ConnectionStatus == ConnectionStatus.Closed
+                                     where status.ConnectionStatus == ConnectionStatus.Closed
                                      select Unit.Default;
 
             // 2- connection provider created a new connection it means the active one has droped

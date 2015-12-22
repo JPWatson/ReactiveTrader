@@ -95,18 +95,13 @@ namespace Adaptive.ReactiveTrader.Client.UI.Connectivity
                     Status = "Connecting...";
                     Disconnected = true;
                     break;
-                case ConnectionStatus.Reconnected:
                 case ConnectionStatus.Connected:
-                    Status = "Connected";
+                    Status = "All Services Connected";
                     Disconnected = false;
                     break;
-                case ConnectionStatus.ConnectionSlow:
-                    Status = "Slow connection detected";
+                case ConnectionStatus.PartiallyConnected:
+                    Status = "Some Services Disconnected";
                     Disconnected = false;
-                    break;
-                case ConnectionStatus.Reconnecting:
-                    Status = "Reconnecting...";
-                    Disconnected = true;
                     break;
                 case ConnectionStatus.Closed:
                     Status = "Disconnected";

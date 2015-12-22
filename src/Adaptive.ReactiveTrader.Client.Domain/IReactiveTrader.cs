@@ -1,7 +1,7 @@
-﻿using System;
-using Adaptive.ReactiveTrader.Client.Domain.Instrumentation;
+﻿using Adaptive.ReactiveTrader.Client.Domain.Instrumentation;
 using Adaptive.ReactiveTrader.Client.Domain.Repositories;
 using Adaptive.ReactiveTrader.Shared.Logging;
+using System;
 
 namespace Adaptive.ReactiveTrader.Client.Domain
 {

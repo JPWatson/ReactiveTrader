@@ -2,18 +2,17 @@
 using Adaptive.ReactiveTrader.Shared.DTO.Pricing;
 using Adaptive.ReactiveTrader.Shared.Logging;
 using System;
-using System.Reactive.Linq;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
 {
     internal class PricingServiceClient : IPricingServiceClient
     {
-        private readonly IWampConnection _connection;
         private readonly ILog _log;
+        private readonly WampServiceClient _serviceClient;
 
-        public PricingServiceClient(IWampConnection connection, ILoggerFactory loggerFactory)
+        public PricingServiceClient(WampServiceClient serviceClient, ILoggerFactory loggerFactory)
         {
-            _connection = connection;
+            _serviceClient = serviceClient;
             _log = loggerFactory.Create(typeof (PricingServiceClient));
         }
 
@@ -21,11 +20,11 @@ namespace Adaptive.ReactiveTrader.Client.Domain.ServiceClients
         {
             if (string.IsNullOrEmpty(currencyPair)) throw new ArgumentException("currencyPair");
 
-            var request = new GetSpotStreamRequestDto {symbol = currencyPair};
+            var request = new GetSpotStreamRequestDto { symbol = currencyPair };
 
             _log.Info($"Subscribing to prices for ccy pair {currencyPair}");
 
-            return _connection.GetRequestStream<PriceDto>("pricing", "getPriceUpdates", request);
+            return _serviceClient.CreateStreamOperation<GetSpotStreamRequestDto, PriceDto>("getPriceUpdates", request);
         }
     }
 }
