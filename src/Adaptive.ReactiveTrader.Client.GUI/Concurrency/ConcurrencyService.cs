@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using System.Windows;
 
 namespace Adaptive.ReactiveTrader.Client.Concurrency
 {
@@ -6,7 +7,7 @@ namespace Adaptive.ReactiveTrader.Client.Concurrency
     {
         public IScheduler Dispatcher
         {
-            get { return DispatcherScheduler.Current; }
+            get { return new DispatcherScheduler(Application.Current.Dispatcher); }
         }
 
         public IScheduler TaskPool

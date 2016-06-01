@@ -32,6 +32,8 @@ namespace Adaptive.ReactiveTrader.Client
             var splash = new SplashWindow();
             splash.Show();
 
+            Websockets.Net.WebsocketConnection.Link();
+
             var bootstrapper = new Bootstrapper();
             var container = bootstrapper.Build();
 
