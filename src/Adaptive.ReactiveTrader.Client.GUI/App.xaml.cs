@@ -29,6 +29,8 @@ namespace Adaptive.ReactiveTrader.Client
 
         private async void Start()
         {
+            Websockets.Net.WebsocketConnection.Link();
+
             var splash = new SplashWindow();
             splash.Show();
 
