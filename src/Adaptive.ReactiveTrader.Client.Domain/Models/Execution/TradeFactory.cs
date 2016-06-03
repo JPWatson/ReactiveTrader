@@ -12,7 +12,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Models.Execution
             {
                 "dd/MM/yyyy",
                 "MM/dd/yyyy",
-                "u"
+                "u",
+                "MM/dd/yyyy HH:mm:ss"
             };
 
             return new Trade(

@@ -111,7 +111,6 @@ namespace Adaptive.ReactiveTrader.Client.UI.SpotTiles
             }
 
         }
-
         private void OnExecutionError(Exception exception)
         {
             if (exception is TimeoutException)

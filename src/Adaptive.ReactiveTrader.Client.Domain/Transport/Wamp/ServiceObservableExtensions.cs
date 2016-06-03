@@ -20,7 +20,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             {
                 return sources.Select(innerSource =>
                 {
-                    TKey key = innerSource.Key;
+                    var key = innerSource.Key;
                     return innerSource
                         .Timeout(period, Observable.Return(onTimeoutItemSelector(key)), scheduler)
                         .Repeat();
@@ -29,9 +29,9 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         }
 
         public static IObservable<IObservable<TValue>> DebounceOnMissedHeartbeat<TKey, TValue>(this IObservable<IGroupedObservable<TKey, TValue>> sources,
-                                                                                  TimeSpan dueTime,
-                                                                                  Func<TKey, TValue> onDebounceItemFactory,
-                                                                                  IScheduler scheduler)
+            TimeSpan dueTime,
+            Func<TKey, TValue> onDebounceItemFactory,
+            IScheduler scheduler)
         {
             return Observable.Create<IObservable<TValue>>(o =>
             {
@@ -42,8 +42,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 
                     o.OnNext(debouncedStream);
                 },
-                                         o.OnError,
-                                         o.OnCompleted);
+                    o.OnError,
+                    o.OnCompleted);
             });
         }
 
@@ -59,11 +59,11 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                 Action debounce = () =>
                 {
                     debounceDisposable.Disposable = scheduler.Schedule(dueTime,
-                                                                       () =>
-                                                                       {
-                                                                           var debouncedItem = itemSelector();
-                                                                           o.OnNext(debouncedItem);
-                                                                       });
+                        () =>
+                        {
+                            var debouncedItem = itemSelector();
+                            o.OnNext(debouncedItem);
+                        });
                 };
 
                 disposables.Add(source.Subscribe(x =>
@@ -71,8 +71,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                     debounce();
                     o.OnNext(x);
                 },
-                                                 o.OnError,
-                                                 o.OnCompleted));
+                    o.OnError,
+                    o.OnCompleted));
 
                 debounce();
 
@@ -87,17 +87,19 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         {
             return Observable.Create<IDictionary<TKey, ILastValueObservable<TValue>>>(o =>
             {
-                object cacheLock = new object();
-                Dictionary<TKey, LastValueObservable<TValue>> cache = new Dictionary<TKey, LastValueObservable<TValue>>();
-                CompositeDisposable disposables = new CompositeDisposable();
+                var cacheLock = new object();
+                var cache = new Dictionary<TKey, LastValueObservable<TValue>>();
+
+                var disposables = new CompositeDisposable();
+
                 disposables.Add(
                     source.Subscribe(innerSource =>
                     {
-                        IObservable<TValue> innerSourcePublished = innerSource.Replay(1).RefCount();
+                        var innerSourcePublished = innerSource.Publish().RefCount();
                         disposables.Add(
                             innerSourcePublished.Subscribe(i =>
                             {
-                                TKey key = keySelector(i);
+                                var key = keySelector(i);
                                 IDictionary<TKey, ILastValueObservable<TValue>> cacheCopy;
                                 lock (cacheLock)
                                 {
@@ -109,17 +111,22 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                                     {
                                         cache[key].LatestValue = i;
                                     }
-                                    cacheCopy = cache.ToDictionary(c => c.Key, c => (ILastValueObservable<TValue>)new LastValueObservable<TValue>(c.Value.Stream, c.Value.LatestValue));
+                                    cacheCopy = cache.ToDictionary(c => c.Key, c => (ILastValueObservable<TValue>) new LastValueObservable<TValue>(c.Value.Stream, c.Value.LatestValue));
                                 }
                                 o.OnNext(cacheCopy);
                             })
-                        );
+                            );
                     },
                         o.OnError,
                         o.OnCompleted)
                     );
                 return disposables;
             });
+        }
+
+        public static void DisposeWith(this IDisposable observable, CompositeDisposable disposable)
+        {
+            disposable.Add(observable);
         }
 
         /// <summary>
@@ -136,8 +143,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                 findServiceInstanceDisposable.Disposable = source.Subscribe(dictionary =>
                 {
                     var serviceWithLeastLoad = dictionary.Values
-                                                         .OrderBy(observable => observable.LatestValue.Load)
-                                                         .FirstOrDefault(s => s.LatestValue.IsConnected);
+                        .OrderBy(observable => observable.LatestValue.Load)
+                        .FirstOrDefault(s => s.LatestValue.IsConnected);
                     if (serviceWithLeastLoad != null)
                     {
                         findServiceInstanceDisposable.Dispose();
@@ -151,8 +158,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                         o.OnError(new InvalidOperationException("No service available"));
                     }
                 },
-                                                                            o.OnError,
-                                                                            o.OnCompleted);
+                    o.OnError,
+                    o.OnCompleted);
                 return disposables;
             });
         }
@@ -164,14 +171,15 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         {
             return Observable.Create<T>(o =>
             {
-                int retryCount = 0;
+                var retryCount = 0;
                 Action subscribe = null;
-                SerialDisposable disposable = new SerialDisposable();
+                var disposable = new SerialDisposable();
                 subscribe = () =>
                 {
                     disposable.Disposable = source.Subscribe(
                         o.OnNext,
-                        ex => {
+                        ex =>
+                        {
                             if (retryPolicy.ShouldRetry(ex, ++retryCount))
                             {
                                 Debug.WriteLine("Retrying [{0}]. This is attempt [{1}]. Exception: [{2}]", operationDescription, retryCount, ex.Message);
@@ -184,7 +192,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                             }
                         },
                         o.OnCompleted
-                    );
+                        );
                 };
                 subscribe();
                 return disposable;
@@ -198,34 +206,34 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
         {
             return Observable.Create<T>(o =>
             {
-                CompositeDisposable disposables = new CompositeDisposable();
-                bool lastItemSet = false;
-                T lastItem = default(T);
+                var disposables = new CompositeDisposable();
+                var lastItemSet = false;
+                var lastItem = default(T);
                 disposables.Add(
                     terminationSequence.Take(1).Subscribe(
-                        _ => {
+                        _ =>
+                        {
                             if (lastItemSet) o.OnNext(endWithItemFactory(lastItem));
                             o.OnCompleted();
                         },
                         o.OnError,
                         o.OnCompleted
-                    )
-                );
+                        )
+                    );
                 disposables.Add(
                     source.Subscribe(
-                        i => {
+                        i =>
+                        {
                             lastItem = i;
                             lastItemSet = true;
                             o.OnNext(i);
                         }
                         , o.OnError,
                         o.OnCompleted
-                    )
-                );
+                        )
+                    );
                 return disposables;
             });
         }
-
-
     }
 }

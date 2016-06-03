@@ -1,5 +1,7 @@
 ﻿using Adaptive.ReactiveTrader.Client.Concurrency;
 using Adaptive.ReactiveTrader.Client.Configuration;
+using Adaptive.ReactiveTrader.Client.Logging;
+using Adaptive.ReactiveTrader.Shared.Logging;
 using Autofac;
 
 namespace Adaptive.ReactiveTrader.Client
@@ -12,6 +14,7 @@ namespace Adaptive.ReactiveTrader.Client
             builder.RegisterType<ConstantRateConfigurationProvider>().As<IConstantRateConfigurationProvider>();
             builder.RegisterType<UserProvider>().As<IUserProvider>();
             builder.RegisterType<ConcurrencyService>().As<IConcurrencyService>();
+            builder.RegisterType<Log4NetLoggerFactory>().As<ILoggerFactory>();
         }
     }
 }

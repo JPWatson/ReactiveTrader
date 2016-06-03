@@ -19,8 +19,9 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             {
                 return;
             }
-
+            
             _observer.OnNext(result);
+            _observer.OnCompleted();
         }
 
         protected override void OnError(Exception ex)

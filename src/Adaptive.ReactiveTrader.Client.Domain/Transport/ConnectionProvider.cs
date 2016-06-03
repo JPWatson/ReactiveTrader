@@ -6,6 +6,7 @@ using Adaptive.ReactiveTrader.Shared.Logging;
 
 namespace Adaptive.ReactiveTrader.Client.Domain.Transport
 {
+/*
     /// <summary>
     /// Connection provider provides always the same connection until it fails then create a new one a yield it
     /// Connection provider randomizes the list of server specified in configuration and then round robin through the list
@@ -81,4 +82,5 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport
             return connection;
         }
     }
+    */
 }

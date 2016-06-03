@@ -104,6 +104,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             return Observable.Create<TResponse>(obs =>
             {
                 var callBack = new ObservableCallback<TResponse>(operationName, obs, _loggerFactory);
+
+                _log.Info("Calling RPC");
                 _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), operationName, new object[] { WrapMessage(request, responseTopic) });
 
                 return callBack;

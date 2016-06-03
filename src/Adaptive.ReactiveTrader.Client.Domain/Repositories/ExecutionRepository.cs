@@ -41,7 +41,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Repositories
 
                 return _executionServiceClient.ExecuteRequest(request)
                     .Select(_tradeFactory.Create)
-                    .DetectStale(TimeSpan.FromSeconds(2), _concurrencyService.TaskPool);
+                    .DetectStale(TimeSpan.FromSeconds(4), _concurrencyService.TaskPool);
             });
         }
     }

@@ -10,7 +10,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
     internal class WampCallback<T> : IWampRawRpcOperationClientCallback
     {
         private readonly string _procedureName;
-        private readonly ILog _log;
+        protected readonly ILog _log;
 
         public WampCallback(string procedureName, ILoggerFactory loggerFactory)
         {
