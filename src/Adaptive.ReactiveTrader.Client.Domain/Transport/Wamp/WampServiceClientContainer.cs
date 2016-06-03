@@ -28,7 +28,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             _loggerFactory = loggerFactory;
         }
 
-        public async Task ConnectAsync()
+        public Task ConnectAsync()
         {
             _statusStream.OnNext(new ConnectionInfo(ConnectionStatus.Connecting, _server, TransportName));
             InitializeServiceClients();
@@ -37,7 +37,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                                         _statusStream.OnError,
                                         _statusStream.OnCompleted);
 
-            await _connection.ConnectAsync();
+            return _connection.ConnectAsync();
         }
 
         public WampServiceClient Reference { get; private set; }

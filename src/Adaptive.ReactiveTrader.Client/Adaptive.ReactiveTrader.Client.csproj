@@ -5,7 +5,7 @@
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E92115A5-D7BE-4A19-AF2B-9FB100B28CE4}</ProjectGuid>
+    <ProjectGuid>{A894C01A-D326-40DF-BABC-0F807EB63A21}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Adaptive.ReactiveTrader.Client</RootNamespace>

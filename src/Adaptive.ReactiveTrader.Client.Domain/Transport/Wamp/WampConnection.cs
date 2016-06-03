@@ -1,10 +1,10 @@
-﻿using Adaptive.ReactiveTrader.Shared.DTO;
-using Adaptive.ReactiveTrader.Shared.Logging;
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Adaptive.ReactiveTrader.Shared.DTO;
+using Adaptive.ReactiveTrader.Shared.Logging;
 using WampSharp.Core.Listener;
 using WampSharp.V2;
 using WampSharp.V2.Client;
@@ -39,16 +39,16 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             _userName = userName;
             _loggerFactory = loggerFactory;
             _channel = new WampChannelFactory().ConnectToRealm(WampRealm)
-                                               .WebSocketTransport(serverUri)
-                                               .JsonSerialization()
-                                               .Build();
+                .WebSocketTransport(serverUri)
+                .JsonSerialization()
+                .Build();
         }
 
         public IObservable<bool> ConnectionStatus => _connectionStatusSubject.AsObservable();
 
         public bool IsConnected => _connectionStatusSubject.Value;
 
-        public async Task ConnectAsync()
+        public Task ConnectAsync()
         {
             if (!_openCalled)
             {
@@ -57,28 +57,30 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 
                 _disposables.Add(SubscribeToConnectionStatus());
 
-                await _channel.Open().ConfigureAwait(false);
+                return _channel.Open();
             }
+
+            return Task.FromResult(0);
         }
 
         private IDisposable SubscribeToConnectionStatus()
         {
             var connectionMonitor = _channel.RealmProxy.Monitor;
             var connectionEstablished = Observable.FromEventPattern<WampSessionCreatedEventArgs>(h => connectionMonitor.ConnectionEstablished += h,
-                                                                                                 h => connectionMonitor.ConnectionEstablished -= h);
+                h => connectionMonitor.ConnectionEstablished -= h);
 
             var connectionBroken = Observable.FromEventPattern<WampSessionCloseEventArgs>(h => connectionMonitor.ConnectionBroken += h,
-                                                                                          h => connectionMonitor.ConnectionBroken -= h);
+                h => connectionMonitor.ConnectionBroken -= h);
 
             var connectionError = Observable.FromEventPattern<WampConnectionErrorEventArgs>(h => connectionMonitor.ConnectionError += h,
-                                                                                            h => connectionMonitor.ConnectionError -= h);
+                h => connectionMonitor.ConnectionError -= h);
 
             return Observable.Merge(connectionEstablished.Select(_ => true),
-                                    connectionBroken.Select(_ => false),
-                                    connectionError.Select(_ => false))
-                             .StartWith(false)
-                             .DistinctUntilChanged()
-                             .Subscribe(_connectionStatusSubject);
+                connectionBroken.Select(_ => false),
+                connectionError.Select(_ => false))
+                .StartWith(false)
+                .DistinctUntilChanged()
+                .Subscribe(_connectionStatusSubject);
         }
 
         public IObservable<T> SubscribeToTopic<T>(string topic)
@@ -88,8 +90,8 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
                 if (IsConnected)
                 {
                     return _channel.RealmProxy.Services
-                                   .GetSubject<T>(topic)
-                                   .Subscribe(obs);
+                        .GetSubject<T>(topic)
+                        .Subscribe(obs);
                 }
 
                 obs.OnError(new InvalidOperationException($"Session not connected, cannot subscribe to topic {topic}"));
@@ -103,7 +105,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
             return Observable.Create<TResponse>(obs =>
             {
                 var callBack = new ObservableCallback<TResponse>(operationName, obs, _loggerFactory);
-                _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), operationName, new object[] { WrapMessage(request, responseTopic) });
+                _channel.RealmProxy.RpcCatalog.Invoke(callBack, new CallOptions(), operationName, new object[] {WrapMessage(request, responseTopic)});
 
                 return callBack;
             });

@@ -5,7 +5,7 @@
     <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{94678B85-9C41-4353-889D-F2202F3DB740}</ProjectGuid>
+    <ProjectGuid>{B6C8FD41-866D-4992-BB11-AD6984C25564}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Adaptive.ReactiveTrader.Client.Domain</RootNamespace>
@@ -188,16 +188,17 @@
       <HintPath>..\packages\modernhttpclient.2.4.2\lib\Portable-Net45+WinRT45+WP8+WPA81\ModernHttpClient.dll</HintPath>
     </Reference>
     <Reference Include="WampSharp">
-      <HintPath>..\lib\WampSharp.dll</HintPath>
+      <HintPath>..\..\..\WampSharp\src\pcl\WampSharp.Default.Client\bin\Debug\WampSharp.dll</HintPath>
     </Reference>
     <Reference Include="WampSharp.NewtonsoftJson">
-      <HintPath>..\lib\WampSharp.NewtonsoftJson.dll</HintPath>
+      <HintPath>..\..\..\WampSharp\src\pcl\WampSharp.Default.Client\bin\Debug\WampSharp.NewtonsoftJson.dll</HintPath>
     </Reference>
-    <Reference Include="WampSharp.WebsocketPortable">
-      <HintPath>..\lib\WampSharp.WebsocketPortable.dll</HintPath>
+    <Reference Include="WampSharp.WebsocketsPcl">
+      <HintPath>..\..\..\WampSharp\src\pcl\WampSharp.Default.Client\bin\Debug\WampSharp.WebsocketsPcl.dll</HintPath>
     </Reference>
-    <Reference Include="WebSocket.Portable">
-      <HintPath>..\lib\WebSocket.Portable.dll</HintPath>
+    <Reference Include="WebSockets.PCL, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Websockets.Pcl.1.1.9\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10\WebSockets.PCL.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

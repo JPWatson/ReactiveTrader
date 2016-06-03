@@ -22,6 +22,8 @@ namespace Adaptive.ReactiveTrader.Client
         {
             base.OnStartup(e);
 
+            Websockets.Net.WebsocketConnection.Link();
+
             InitializeLogging();
 
             Start();
@@ -29,6 +31,7 @@ namespace Adaptive.ReactiveTrader.Client
 
         private async void Start()
         {
+            
             var splash = new SplashWindow();
             splash.Show();
 
