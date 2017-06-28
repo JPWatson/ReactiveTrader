@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using Adaptive.ReactiveTrader.Client.Domain.Authorization;
 using Adaptive.ReactiveTrader.Client.Domain.Concurrency;
@@ -16,7 +17,6 @@ namespace Adaptive.ReactiveTrader.Client.Domain
 {
     public class ReactiveTrader : IReactiveTrader, IDisposable
     {
-        private ConnectionProvider _connectionProvider;
         private ILoggerFactory _loggerFactory;
         private ILog _log;
         private IControlRepository _controlRepository;
@@ -26,11 +26,20 @@ namespace Adaptive.ReactiveTrader.Client.Domain
         {
             _loggerFactory = loggerFactory ?? new DebugLoggerFactory();
             _log = _loggerFactory.Create(typeof(ReactiveTrader));
-            _connectionProvider = new ConnectionProvider(username, servers, _loggerFactory);
+            
             var concurrencyService = new ConcurrencyService();
 
             _serviceClientContainer = new WampServiceClientContainer(servers[0], username, concurrencyService, _loggerFactory);
-            _serviceClientContainer.ConnectAsync().Wait();
+            try
+            {
+
+                _serviceClientContainer.ConnectAsync().Wait(); // TODO BLOCK
+
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
 
             var referenceDataServiceClient = new ReferenceDataServiceClient(_serviceClientContainer.Reference, _loggerFactory);
             var executionServiceClient = new ExecutionServiceClient(_serviceClientContainer.Execution);

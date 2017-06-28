@@ -57,7 +57,7 @@ namespace Adaptive.ReactiveTrader.Client.Domain.Transport.Wamp
 
                 _disposables.Add(SubscribeToConnectionStatus());
 
-                await _channel.Open().ConfigureAwait(false);
+                await _channel.Open();
             }
         }
 
